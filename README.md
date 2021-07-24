@@ -2,7 +2,7 @@ weekly48
 
 ----
 
-[![Introduction to GitOps Certificate, Linux Fundation]((https://raw.githubusercontent.com/maximilianou/weekly48/751f31b0f6089cf2e4476d447e3a734d10a3d473/share/maximiliano-usich-introduction-to-gitops-lfs169-certificate.pdf))](https://raw.githubusercontent.com/maximilianou/weekly48/751f31b0f6089cf2e4476d447e3a734d10a3d473/share/maximiliano-usich-introduction-to-gitops-lfs169-certificate.pdf)
+[![Introduction to GitOps Certificate, Linux Fundation](https://raw.githubusercontent.com/maximilianou/weekly48/master/share/maximiliano-usich-introduction-to-gitops-lfs169-certificate.png)](https://raw.githubusercontent.com/maximilianou/weekly48/master/share/maximiliano-usich-introduction-to-gitops-lfs169-certificate.png)
 
 
 
