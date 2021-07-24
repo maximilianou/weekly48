@@ -1,8 +1,19 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+import { useState } from 'react';
+
+type Product {
+  id: String!,
+  name: String,
+  description: String,
+  image: String,
+  price: Number,
+}
 
 export default function Home() {
+  const [products, setProducts] = useState<Product[]>([]);
+
   return (
     <div className={styles.container}>
       <Head>
