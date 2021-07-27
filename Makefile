@@ -189,7 +189,79 @@ step4505 graphql-api-init:
 	cd app && npx create-express-typescript-application api -t plain
 	cd app && cd api && npm i @neo4j/graphql graphql apollo-server neo4j-driver
 
-#####################################################3
+
+
+#step4403 docker-psql-ls:
+#	docker exec docker_db_1 psql -Upostgres -d postgres -c '\l'	
+#
+#step4403-t docker-psql-ls-twitter:
+#	docker exec docker_db_1 psql -Upostgres -d twitter-clone -c '\l'	
+
+#step4404 docker-psql-exec-sql:
+#	docker exec docker_db_1 psql -Upostgres -d postgres --file=/sql/input.sql > docker/sql/output.sql
+
+#step4405 docker-pg_dump:
+#	docker exec docker_db_1 pg_dump -Upostgres -d twitter_clone > docker/sql/create_tables.sql
+
+#step4406 api-prisma-generate:
+#	cd twitter-clone/api && npx prisma generate
+#
+#step4407 api-prisma-migrate-dev:
+#	cd twitter-clone/api && npx prisma migrate dev --name init
+#
+#step4408 api-prisma-migrate-up:
+#	cd twitter-clone/api && npx prisma migrate resolve --applied 20210615195142_init
+#
+#step4409 api-prisma-introspect: 
+#	cd twitter-clone/api && npx prisma introspect ## check prisma - db
+#
+#step4410 api-npm-prisma-update: 
+#	cd twitter-clone/api && npm i -D prisma && npm i @prisma/client 
+
+#step4411 docker-psql-drop-database:
+#	docker exec docker_db_1 psql -Upostgres -d postgres -c "DROP DATABASE twitter_clone;"	
+
+
+#step01 app: ## Nestjs - GraphQL
+#	mkdir app	
+#step02 api-create: app
+#	cd app && nest new api
+#step03 api-install:
+#	cd app/api && npm install @nestjs/graphql graphql-tools graphql apollo-server-express class-validator uuid
+#step04 generate-types:
+#	cd app/api && ./node_modules/.bin/ts-node src/scripts/generate.ts
+#step05 api-test:
+#	curl -X POST http://localhost:4000/graphql -H "Content-Type: application/json" -d '{ "query":"query { article(  id: 1 ){ id, title, content } }"}'
+
+#####################################################
+## Server
+#####################################################
+
+#ssh-manual-root-update: ## debian - dev-user:staff /usr/loca/bin
+#	apt -y update; apt -y upgrade;
+#	adduser dev-user; 
+# usermod -g ssh dev-user; 
+#	usermod -g staff dev-user;
+# chown root:staff /usr/local/bin; chmod 775 /usr/local/bin;
+# hostname [dev.domain];
+step11 debian-dev-user-create:
+	apt -y update; apt -y upgrade && adduser dev-user && usermod -g ssh dev-user && usermod -g staff dev-user && chown root:staff /usr/local/bin && chmod 775 /usr/local/bin && hostname dev.simpledoers.com
+	apt -y install apt-transport-https software-properties-common ca-certificates curl gnupg lsb-release; echo  'deb [arch=amd64] https://download.docker.com/linux/debian  buster stable' | tee /etc/apt/sources.list.d/docker.list > /dev/null ;  curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - ; add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable" ; apt -y update; apt -y remove docker docker-engine docker.io containerd runc; apt -y install docker-ce docker-ce-cli containerd.io; usermod -aG docker dev-user
+
+step10 ssh-docker-install: ## debian - docker install
+	$(foreach server, $(servers),  ssh root@$(server)	" apt -y install apt-transport-https software-properties-common ca-certificates curl gnupg lsb-release; echo  'deb [arch=amd64] https://download.docker.com/linux/debian  buster stable' | tee /etc/apt/sources.list.d/docker.list > /dev/null ;  curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - ; add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable" ; apt -y update; apt -y remove docker docker-engine docker.io containerd runc; apt -y install docker-ce docker-ce-cli containerd.io; usermod -aG docker $(user) " \ ;)
+
+step20 ssh-login:
+	$(foreach server, $(servers),  ssh-copy-id  $(user)@$(server);)
+	
+step21 ssh-ls:
+	$(foreach server, $(servers),  ssh $(user)@$(server) "ls -a";)
+
+step22 ssh-docker-test:
+	$(foreach server, $(servers),  ssh $(user)@$(server) "docker run hello-world";)
+
+
+#####################################################
 ## server online alpine firewall - first steps
 step4506 alpine_firewall: 
 	apk update && apk upgrade
@@ -319,69 +391,8 @@ step4519 alpine_firewall_disable_reset_awall:
 	rc-update del ip6tables
 	rc-update del iptables
 #####################################################3
+#####################################################3
 
-
-#step4403 docker-psql-ls:
-#	docker exec docker_db_1 psql -Upostgres -d postgres -c '\l'	
-#
-#step4403-t docker-psql-ls-twitter:
-#	docker exec docker_db_1 psql -Upostgres -d twitter-clone -c '\l'	
-
-#step4404 docker-psql-exec-sql:
-#	docker exec docker_db_1 psql -Upostgres -d postgres --file=/sql/input.sql > docker/sql/output.sql
-
-#step4405 docker-pg_dump:
-#	docker exec docker_db_1 pg_dump -Upostgres -d twitter_clone > docker/sql/create_tables.sql
-
-#step4406 api-prisma-generate:
-#	cd twitter-clone/api && npx prisma generate
-#
-#step4407 api-prisma-migrate-dev:
-#	cd twitter-clone/api && npx prisma migrate dev --name init
-#
-#step4408 api-prisma-migrate-up:
-#	cd twitter-clone/api && npx prisma migrate resolve --applied 20210615195142_init
-#
-#step4409 api-prisma-introspect: 
-#	cd twitter-clone/api && npx prisma introspect ## check prisma - db
-#
-#step4410 api-npm-prisma-update: 
-#	cd twitter-clone/api && npm i -D prisma && npm i @prisma/client 
-
-#step4411 docker-psql-drop-database:
-#	docker exec docker_db_1 psql -Upostgres -d postgres -c "DROP DATABASE twitter_clone;"	
-
-
-#step01 app: ## Nestjs - GraphQL
-#	mkdir app	
-#step02 api-create: app
-#	cd app && nest new api
-#step03 api-install:
-#	cd app/api && npm install @nestjs/graphql graphql-tools graphql apollo-server-express class-validator uuid
-#step04 generate-types:
-#	cd app/api && ./node_modules/.bin/ts-node src/scripts/generate.ts
-#step05 api-test:
-#	curl -X POST http://localhost:4000/graphql -H "Content-Type: application/json" -d '{ "query":"query { article(  id: 1 ){ id, title, content } }"}'
-
-#ssh-manual-root-update: ## debian - dev-user:staff /usr/loca/bin
-#	apt -y update; apt -y upgrade;
-#	adduser dev-user; 
-# usermod -g ssh dev-user; 
-#	usermod -g staff dev-user;
-# chown root:staff /usr/local/bin; chmod 775 /usr/local/bin;
-# hostname [dev.domain];
-
-step10 ssh-docker-install: ## debian - docker install
-	$(foreach server, $(servers),  ssh root@$(server)	" apt -y install apt-transport-https software-properties-common ca-certificates curl gnupg lsb-release; echo  'deb [arch=amd64] https://download.docker.com/linux/debian  buster stable' | tee /etc/apt/sources.list.d/docker.list > /dev/null ;  curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - ; add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable" ; apt -y update; apt -y remove docker docker-engine docker.io containerd runc; apt -y install docker-ce docker-ce-cli containerd.io; usermod -aG docker $(user) " \ ;)
-
-step20 ssh-login:
-	$(foreach server, $(servers),  ssh-copy-id  $(user)@$(server);)
-	
-step21 ssh-ls:
-	$(foreach server, $(servers),  ssh $(user)@$(server) "ls -a";)
-
-step22 ssh-docker-test:
-	$(foreach server, $(servers),  ssh $(user)@$(server) "docker run hello-world";)
 
 
 #step23 ssh-k3d-install:
