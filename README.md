@@ -348,6 +348,45 @@ flux get kustomizations
 
 ##### Kustomizing Kubernetes Environments
 
+- Overlay ( kustomize tool )
+  - vote
+    - base
+      - deployment.yaml
+      - service.yaml
+      - kustomization.yaml - kind: kustomization, resources: - deployment.yaml, -service.yaml
+    - dev
+      - deployment.yaml
+      - kustomization.yaml - kind: kustomization, resources: ..
+    - staging
+      - deployment.yaml
+      - kustomization.yaml - kind: kustomization, resources: ../base, - deployment.yaml
+
+<https://kustomize.io/>
+
+```
+deploy/vote/base$ kustomize create --autodetect
+cat kustomization.yaml
+```
+
+```
+flux get kustomizations --context=dev
+flux logs --tail 20 --follow --context=dev
+cd flux-infra/cluster/dev
+
+vi vote-dev-kustomization.yaml
+  path: ./deploy/vote/dev
+
+git add
+git commit
+git push
+
+watch flux get kustomizations --context=dev
+```
+
+```
+kustomize build
+```
+
 
 
 ----
