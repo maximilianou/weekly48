@@ -229,6 +229,127 @@ NAME                             DESIRED   CURRENT   READY   AGE
 replicaset.apps/vote-f5c7c9f8c   1         1         1       65s
 
 ```
+
+DRAFT
+```
+personal access token - github
+export GITHUB_TOKEN=xxx
+export GITHUB_USER=xxx
+kubectl get nodes
+kubectl config get-contexts
+kubectl get pods --all-namespaces
+kubectl get crds
+flux
+flux bootstrap github -h
+flux bootstrap github --owner=$GITHUB_USER \
+  --repository=flux-infra \
+  --branch=main \
+  --path=./cluster/dev
+  --personal \
+  --log-level=debug \
+  --network-policy=false \
+  --components=source-controller,kustomize-controller
+
+flux check
+kubectl get crds
+kubectl get pods -n flux-system
+kubectl get all -n flux-system
+kubectl get clusterroles,clusterrolebindings,serviceaccounts -n flux-system -l "app.kubernetes.io/instance=flux-system"
+
+```
+- source-constoller
+- kustomize-controlle ( deployment contoller )
+
+https://fluxcd.io/
+
+- source
+```
+flux create source git -h  
+```
+- spec
+  - url - repo |ssh |https
+  - interval |s |m |h
+  - branch
+  - secretRef - credentials
+  - verify - GPG 
+  - ignore 
+  - timeout
+  - ref
+  - suspend
+
+```
+flux get
+flux get sources git
+flux create source git -h
+flux create source git instavote --url https://github.com/../instavote.git --branch main 
+flux get sources git
+
+```
+- kustomize
+  - source1, source2
+  - reconcile - k8s cluster
+  - kustomize |Plain Yaml |Overlay
+  - validate - against k8s api
+  - notify - notification-controller
+  - Garbage Collection ( --prune )
+  - sequencing - ( --depends-on )
+  - helths checks
+  - RBAC - multi tenancy security 
+
+- CRD
+  - kind: Kustomization
+    - sourceRef - gitrepository
+    - path
+    - interval
+    - prune
+    - dependsOn
+    - targetNamespace
+    - helthchecks
+
+```
+flux get kustomizations
+flux get source git
+kubectl get ns
+kubectl create ns instavote
+kubectl get ns
+flux create kustomization -h
+flux create kustomization vote-dev --source=instavote --path="./deploy/vote" --prune=true --interval=1m --target-namespace=instavote
+flux get kustomizations
+kubectl get all -n instavote --show-labels
+```
+
+- manual reconciele
+```
+flux reconcile kustomization vote-dev
+flux reconcile source git instavote
+```
+
+- semver controller
+```
+git clone https://github.com/.../flux-infra
+cd flux-infra/cluster/dev
+flux export source git instavote
+flux export source git instavote >> instavote-gitrepository.yaml
+
+flux export kustomization vote-dev 
+flux export kustomization vote-dev >> vote-dev-kustomization.yaml
+git add
+git commit
+git push origin main
+
+```
+- healthcheck
+```
+flux create kustomization vote-dev --source=instavote  --path="./deploy/vote" --prune=true --interval=1m --target-namespace=instavote --health-check="Deployment/vote.instavote" --export > vote-dev-kustomization.yaml
+flux get kustomizations
+```
+
+- Depencency - Sequencing
+
+##### Kustomizing Kubernetes Environments
+
+
+
 ----
 References:
 
