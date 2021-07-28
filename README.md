@@ -387,6 +387,13 @@ watch flux get kustomizations --context=dev
 kustomize build
 ```
 
+- helm
+```
+helm install db lfs269/posgres --set settings.authMethod=trust,service.name=db --namespace=instavote
+kubectl get all -n instavote
+
+```
+
 
 
 ----
