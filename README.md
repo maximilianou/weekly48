@@ -391,10 +391,204 @@ kustomize build
 ```
 helm install db lfs269/posgres --set settings.authMethod=trust,service.name=db --namespace=instavote
 kubectl get all -n instavote
+```
+
+- notification
+```
+kubectl create secret generic slack-url --from-literal=address=https://hooks.slack.com/services/TKSD253/ASDFAS -n flux-system 
+kubectl get secret -n flux-system
+```
+
+```
+flux get alert-providers
+flux check
+kubectl get crds
+flux create alert-provider -h
+flux create alert-provider slack --type slack --channel general --address http://hooks.slack.com/services/your/slack/webhook --secret-ref webhook-url --export
+```
+
+```
+flux create alert -h
+flux create alert slack-notif --event-source=Kustomizetion/* --event-source=GitRepository/* --event-source=HelmRelease/* --provider-ref=slack --event-severity=info --export
+```
+- Notification Alert to GitRepository
+```
+ - Personal Token with write acces on github
+kubectl create secret -n flux-system generic github-token --from-literal=token=AAAA
+
+kubectl describe secret -n flux-system github-token
+
+flux create alert-provider github-instavote --type=github --address=https://github.com/aaaaa/instavote --secret-ref=github-token --export
+
+flux create alert vote-staging --provider-ref=github-instavote --event-severity info --event-source Kustomization/vote-staging --export
+
+flux create alert redis-staging --provider-ref=github-instavote --event-severity info --event-source Kustomization/redis-staging --export
+
+flux create alert worker-staging --provider-ref=github-instavote --event-severity info --event-source Kustomization/worder-staging --export
+
+flux get alerts
+```
+
+- push model over notification
+```
+flux-infra/clusters/staging/flux-system$ cat > expose-webhook-receiver.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-receiver
+  namespace: flux-system
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: http-webhook
+    nodePort: 31234
+  selector:
+    app: notification-controller
+  type: NodePort
+
+
+flux-infra/clusters/staging/flux-system/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- gotk-components.yaml
+- gotk-slack.yaml
+
+patchesStrategicMerge:
+- expose-webhook-receiver.yaml
+
+
+kubectl get svc -n flux-system
+flux reconcile kustomization flux-system
+flux reconcile source git flux-system
+```
+
+```
+WEBHOOK_TOKEN=`date | md5sum | cut -d ' -f1' `; # Random String
+echo $WEBHOOK_TOKEN
+
+kubectl -n flux-system create secret generic webhook-token --from-literal=token=$WEBHOOK_TOKEN
+kubectl -n flux-system describe secret webhook-token
+
+flux get receivers
+flux create receiver -h
+flux create receiver instavote --type github --event ping --event push --secret-ref webhook-token --resource GitRepository/instavote --export
+flux get receivers
+
+```
+
+- monitoring p & g
+
+```
+flux get source git
+
+flux create kustomization monitoring --interval=1h --prune=true --source=monitoring --path="./manifests/monitoring" --health-check="Deployment/prometheus.flux-system" --health-check="Deployment/grafana.flux-system"
+
+flux get kustomizations
+
+kubectl get svc,deply -n flux-system
 
 ```
 
 
+#### CI with Tekton ( kubernetes native )
+
+- kubernetes + CI ( Tekton )
+```
+controllers
+  tekton-pipelines
+    runs ci-pipelines
+crds
+  pipelines
+    pipeline runs
+  tasks
+    task runs
+  conditions
+  cluster tasks
+
+
+3 components of tekton
+  tekton pipelines
+  tekton triggers ( events, git push )
+  tekton dashboard ( gui, to lunch pipelines)
+
+- tekton
+
+pipeline:
+  tasks:
+    - build:
+      steps:
+        - clone-repo
+        - compile
+    - test:
+      steps:
+        - run ut
+        - push reports
+    - img-build:
+      steps:
+        - build image
+        - push image to reg
+```
+
+```
+kubectl version -o yaml
+kubectl get storageclasses
+which tkn
+https://tekton.dev
+kubectl apply --filename https://storage.googleapis.com/tekton-release/pipeline/latest/releas..
+kubectl get ns
+kubectl get crds
+
+install tkn from the page tekton.dev instructions
+
+tkn p list
+tkn t list
+
+https://github.com/lfs269/tekton-ci
+https://github.com/tektoncd/catalog/task/git-clone
+tekton hub
+
+watch 'tkn p list; tkn pr list; tkn t list; tkn tr list; kubectl get pods'
+kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.3/git-clone.yaml
+kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/kaniko/0.3/kanilo.yaml
+
+```
+- pipeline runs
+```
+tkn pr logs vote-ci -f
+docker login
+cat ~/.docker/config.json
+cat ~/.docker/config.json | base64 | tr -d '\n'
+
+- file: dockerhub-creds-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata: 
+  name: dockerhub-creds
+data:
+  config.json: <base64-encoded-json-here>
+
+kubectl apply -f dockerhub-creds-secret.yaml 
+
+```
+
+- CI CD ( tekton - flux )
+```
+flux create image repository -h
+flux create imgae repository vote --image=dopsdemo/vote --interval=1m
+flux create image policy -h # ( what image to take from the image repository )
+
+flux create secret -h
+flux create secret git -h
+flux create secret git github-instavote --url=https://github.com/aaaaa/instavote --username=$GITHUB_USER --password=$GITHUB_TOKEN
+flux get secrets
+```
+
+```
+github.com/fluxcd/flux-multi-tenancy
+```
 
 ----
 References:
